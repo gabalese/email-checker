@@ -2,8 +2,8 @@ package it.alese.emailchecker
 
 import org.xbill.DNS.{MXRecord, Type, Lookup}
 
-object MXServer {
-  def apply(domain: String): Either[ServerUnreachableException, String] = {
+object MXResolver {
+  def query(domain: String): Either[ServerUnreachableException, String] = {
     try {
       val records = new Lookup(domain, Type.MX).run()
       val mxRecord = records(0).asInstanceOf[MXRecord]

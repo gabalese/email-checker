@@ -3,13 +3,13 @@ package it.alese.emailchecker
 case class EmailChecker(email: String) {
 
   private val domain: String = email.split("@")(1)
-  private val host: Either[ServerUnreachableException, String] = MXServer(domain)
+  private val host: Either[ServerUnreachableException, String] = MXResolver.query(domain)
 
-  def check: Response = {
+  def check: ServiceResponse = {
     validate
   }
 
-  private[this] def validate: Response = {
+  private[this] def validate: ServiceResponse = {
     verificationProcess match {
       case UnableToConnect => ServerUnreachable
       case RelayingDenied => Denied
