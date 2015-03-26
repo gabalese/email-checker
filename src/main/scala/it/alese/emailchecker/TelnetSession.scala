@@ -5,11 +5,10 @@ import java.net.Socket
 
 case class TelnetSession(socket: Socket, input: PrintWriter, output: BufferedReader) {
 
-  def test: Boolean = {
-    val reply = Reply(output.readLine)
-    reply.code match {
-      case "554" => false
-      case _ => true
+  def allowsConnections: Boolean = {
+    Reply(output.readLine).code match {
+      case "220" => true
+      case _ => false
     }
   }
 
@@ -25,19 +24,14 @@ case class TelnetSession(socket: Socket, input: PrintWriter, output: BufferedRea
 }
 
 object TelnetSession {
-  def apply(host: String): Either[Exception, TelnetSession] = {
-    try {
+  def apply(host: String): TelnetSession = {
       val socket = new Socket(host, 25)
-      val session = new TelnetSession(
+      new TelnetSession(
         socket,
         new PrintWriter(socket.getOutputStream, true),
         new BufferedReader(
           new InputStreamReader(socket.getInputStream)
         )
       )
-      Right(session)
-    } catch {
-      case ex: Exception => Left(ex)
-    }
   }
 }

@@ -3,32 +3,29 @@ package it.alese.emailchecker
 case class EmailChecker(email: String) {
 
   private val domain: String = email.split("@")(1)
-  private val host = MXServer(domain)
+  private val host: Either[ServerUnreachableException, String] = MXServer(domain)
 
-  val isValid: Boolean = {
-    validate match {
-      case RecipientOK => true
-      case _ => false
-    }
+  def check: Response = {
+    validate
   }
 
-  def validate: Response = {
+  private[this] def validate: Response = {
     verificationProcess match {
-      case UnableToConnect => ServerUnreacheable
+      case UnableToConnect => ServerUnreachable
+      case RelayingDenied => Denied
       case r: Reply => r.response
     }
   }
 
-  def verificationProcess: SMTPReply = {
+  private[this] def verificationProcess: SMTPReply = {
     host match {
       case Right(server) => {
-        val connection = TelnetSession(server).right.get
-        if (!connection.test)
-          return UnableToConnect
-        connection.send("helo hi") // be polite
-        connection.send(s"mail from: <$email>")
-        val rcptReply = connection.send(s"rcpt to: <$email>")
-        connection.close()
+        val session = TelnetSession(server)
+        if(!session.allowsConnections) return RelayingDenied
+        session.send("HELO HI")
+        session.send(s"mail from: <$email>")
+        val rcptReply = session.send(s"rcpt to: <$email>")
+        session.close()
         Reply(rcptReply)
       }
       case Left(ex) => UnableToConnect

@@ -10,6 +10,7 @@ case class Reply(status: String) extends SMTPReply {
     case "5.1.3" => BadSyntax
     case "5.7.0" => IPBlacklisted
     case "2.1.5" => RecipientOK
+    case "5.5.4" => Denied
   }
 }
 
