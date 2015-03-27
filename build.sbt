@@ -1,5 +1,5 @@
 name := "email-checker"
-
+organization := "it.alese"
 version := "1.0"
 
 libraryDependencies ++= Seq(
