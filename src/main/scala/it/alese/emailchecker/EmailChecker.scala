@@ -1,15 +1,17 @@
 package it.alese.emailchecker
 
+import scala.util.Try
+
 case class EmailChecker(email: String) {
 
   private val domain: String = email.split("@")(1)
-  private val host: Either[ServerUnreachableException, String] = MXResolver.query(domain)
+  private val host: Try[String] = MXResolver.query(domain)
 
   def check: ServiceResponse = {
     validate
   }
 
-  private[this] def validate: ServiceResponse = {
+  private def validate: ServiceResponse = {
     verificationProcess match {
       case UnableToConnect => ServerUnreachable
       case RelayingDenied => Denied
@@ -17,19 +19,17 @@ case class EmailChecker(email: String) {
     }
   }
 
-  private[this] def verificationProcess: SMTPReply = {
-    host match {
-      case Right(server) => {
+  private def verificationProcess: SMTPReply = {
+    host.map {
+      server =>
         val session = TelnetSession(server)
-        if(!session.allowsConnections) return RelayingDenied
+        if (!session.allowsConnections) return RelayingDenied
         session.send("HELO HI")
         session.send(s"mail from: <$email>")
         val rcptReply = session.send(s"rcpt to: <$email>")
         session.close()
         Reply(rcptReply)
-      }
-      case Left(ex) => UnableToConnect
-    }
+    } getOrElse UnableToConnect
   }
 }
 
