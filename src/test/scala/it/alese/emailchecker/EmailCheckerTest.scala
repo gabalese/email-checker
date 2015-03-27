@@ -6,19 +6,19 @@ class EmailCheckerTest extends WordSpec with Matchers {
 
   "An EmailChecker" should {
     "Recognise a valid email as valid" in {
-      EmailChecker("gabriele@alese.it").check shouldBe RecipientOK
+      EmailChecker.check("gabriele@alese.it") shouldBe RecipientOK
     }
 
     "Recognise an invalid email as invalid" in {
-      EmailChecker("non-existant@alese.it").check shouldBe DoesNotExist
+      EmailChecker.check("non-existant@alese.it") shouldBe DoesNotExist
     }
 
     "Recognise an invalid email is domain is non existant" in {
-      EmailChecker("gabriele@ilmiodominioinesistente.it").check shouldBe ServerUnreachable
+      EmailChecker.check("gabriele@ilmiodominioinesistente.it") shouldBe ServerUnreachable
     }
 
     "Give information about servers that do not allow this check" in {
-      EmailChecker("gabrielealese@edizionieo.it").check shouldBe Denied
+      EmailChecker.check("gabrielealese@edizionieo.it") shouldBe Denied
     }
 
   }

@@ -2,24 +2,23 @@ package it.alese.emailchecker
 
 import scala.util.Try
 
-case class EmailChecker(email: String) {
+object EmailChecker {
 
-  private val domain: String = email.split("@")(1)
-  private val host: Try[String] = MXResolver.query(domain)
-
-  def check: ServiceResponse = {
-    validate
+  def check(email: String): ServiceResponse = {
+    validate(email)
   }
 
-  private def validate: ServiceResponse = {
-    verificationProcess match {
+  private def validate(email: String): ServiceResponse = {
+    val domain: String = email.split("@")(1)
+    val host: Try[String] = MXResolver.query(domain)
+    verificationProcess(email, host) match {
       case UnableToConnect => ServerUnreachable
       case RelayingDenied => Denied
       case r: Reply => r.response
     }
   }
 
-  private def verificationProcess: SMTPReply = {
+  private def verificationProcess(email: String, host: Try[String]): SMTPReply = {
     host.map {
       server =>
         val session = TelnetSession(server)
