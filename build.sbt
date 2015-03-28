@@ -1,6 +1,6 @@
 name := "email-checker"
 organization := "it.alese"
-version := "1.0"
+version := "0.1"
 
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "2.2.4",
